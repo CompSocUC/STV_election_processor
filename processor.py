@@ -23,6 +23,11 @@ def report_voter_turnout(stv):
                                len(stv.members), len(stv.votes)))
 
 
+def report_roles(stv):
+    for role in stv.roles:
+        print(str(role) + "\n")
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

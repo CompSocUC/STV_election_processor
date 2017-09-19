@@ -1,0 +1,62 @@
+[
+    {
+        "name": "Presient",
+        "column_name": "President candidates",
+        "held_in_conjuction": false,
+        "number_of_positions": 1
+    },
+    {
+        "name": "Vice President",
+        "column_name": "Vice President candidates",
+        "held_in_conjuction": false,
+        "number_of_positions": 2
+    },
+    {
+        "name": "Secretary",
+        "column_name": "Secretary candidates",
+        "held_in_conjuction": false,
+        "number_of_positions": 1
+    },
+    {
+        "name": "Treasurer",
+        "column_name": "Treasurer Candidates",
+        "held_in_conjuction": false,
+        "number_of_positions": 1
+    },
+    {
+        "name": "Marketing Manager",
+        "column_name": "Marketing Manager candidates",
+        "held_in_conjuction": false,
+        "number_of_positions": 1
+    },
+    {
+        "name": "Social Events Manager",
+        "column_name": "Social Events Manager candidates",
+        "held_in_conjuction": false,
+        "number_of_positions": 2
+    },
+    {
+        "name": "Academic Events Manager",
+        "column_name": "Academic Events Manager candidates",
+        "held_in_conjuction": false,
+        "number_of_positions": 2
+    },
+    {
+        "name": "Equity Officer",
+        "column_name": "Equity Officer candidates",
+        "held_in_conjuction": true,
+        "number_of_positions": 2
+    },
+    {
+        "name": "Postgraduate Representative",
+        "column_name": "Postgraduate Representative candidates",
+        "held_in_conjuction": true,
+        "number_of_positions": 1
+    },
+    {
+        "name": "Second Year Representative",
+        "column_name": "Second Year Representative candidates",
+        "held_in_conjuction": false,
+        "number_of_positions": 2
+    }
+]

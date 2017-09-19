@@ -1,7 +1,8 @@
 from pathlib import Path
-from classes import Vote
+from classes import Vote, Role
 import csv
 import re
+import json
 
 MEMBERS_FILE_PATH_DEFAULT = "members.csv"
 MEMBERS_UCCODE_COLUMN_NAME_DEFAULT = "UC Username"
@@ -9,6 +10,8 @@ USECODE_REGEX = "[a-zA-Z]{3,4}[0-9]{2,3}"
 
 VOTES_FILE_PATH_DEFAULT = "votes.csv"
 VOTES_UCCODE_COLUMN_NAME_DEFAULT = "What is your UC usercode (abc123)"
+
+ROLES_FILE_PATH_DEFAULT = "roles.json"
 
 
 def check_match_for_usercode_format(value):
@@ -117,6 +120,27 @@ def read_votes(stv):
                                                            user_code_column)
 
 
+def read_roles(stv):
+    roles_file = input("Path to roles json file, [{}]:"
+                       .format(ROLES_FILE_PATH_DEFAULT))
+
+    if roles_file == '':
+        roles_file = ROLES_FILE_PATH_DEFAULT
+
+    roles_file_path = Path(roles_file)
+
+    if not roles_file_path.is_file():
+        raise FileExistsError("Error, roles file does not exist, or path is "
+                              "incorrect")
+
+    with open(roles_file) as roles_json:
+        stv.roles = json.load(roles_json, object_hook=class_mapper)
+
+
+def class_mapper(d):
+    return Role(**d)
+
+
 def create_vote(row, user_code_column):
     vote = Vote(row[user_code_column])
 
@@ -126,6 +150,7 @@ def create_vote(row, user_code_column):
 def get_input(stv):
     read_members(stv)
     read_votes(stv)
+    read_roles(stv)
 
 
 if __name__ == "__main__":
