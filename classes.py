@@ -5,12 +5,19 @@ class STV:
         self.votes = {}
         self.number_non_member_votes = 0
         self.roles = []
+        self.invalidVotes = {}
 
 
 class Vote:
 
     def __init__(self, usercode):
         self.usercode = usercode
+
+    def __repr__(self):
+        return "Vote({!r})".format(self.usercode)
+
+    def __str__(self):
+        return "Vote made by {}".format(self.usercode)
 
 
 class Role:

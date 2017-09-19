@@ -16,6 +16,14 @@ ROLES_FILE_PATH_DEFAULT = "roles.json"
 
 def check_match_for_usercode_format(value):
     """Check to see if the usercode supplied matches the expected format.
+
+    Args:
+        value (str): The usercode to validate.
+
+    Returns:
+        bool: True if the usercode is valid, False otherwise.
+
+
     >>> check_match_for_usercode_format("abc123")
     True
     >>> check_match_for_usercode_format("abc12")
@@ -36,6 +44,14 @@ def check_match_for_usercode_format(value):
     False
     >>> check_match_for_usercode_format("")
     False
+    >>> check_match_for_usercode_format(" abc123")
+    False
+    >>> check_match_for_usercode_format("abc123 ")
+    False
+    >>> check_match_for_usercode_format(" abc123 ")
+    False
+    >>> check_match_for_usercode_format("abc 123")
+    False
     """
 
     if type(value) is str and re.match(USECODE_REGEX, value) is not None:
@@ -45,6 +61,9 @@ def check_match_for_usercode_format(value):
 
 
 def read_members(stv):
+    """Read members from a csv file, this function extracts all of the member
+    usercodes from the file and stores them in the stv object"""
+
     members_file = input("Path to members csv file, [{}]: "
                          .format(MEMBERS_FILE_PATH_DEFAULT))
 
@@ -74,10 +93,10 @@ def read_members(stv):
                             "the usercode, usercodes should match the regex {}"
                             .format(USECODE_REGEX))
         else:
-            stv.members.add(row[user_code_column])
+            stv.members.add(row[user_code_column].lower())
 
         for row in reader:
-            user = row[user_code_column]
+            user = row[user_code_column].lower()
             if check_match_for_usercode_format(user):
                 stv.members.add(user)
 
@@ -112,12 +131,12 @@ def read_votes(stv):
                             "the usercode, usercodes should match the regex {}"
                             .format(USECODE_REGEX))
         else:
-            stv.votes[row[user_code_column]] = create_vote(row,
-                                                           user_code_column)
+            stv.votes[row[user_code_column].lower()] = \
+                create_vote(row, user_code_column)
 
         for row in reader:
-            stv.votes[row[user_code_column]] = create_vote(row,
-                                                           user_code_column)
+            stv.votes[row[user_code_column].lower()] = \
+                create_vote(row, user_code_column)
 
 
 def read_roles(stv):
@@ -142,7 +161,7 @@ def class_mapper(d):
 
 
 def create_vote(row, user_code_column):
-    vote = Vote(row[user_code_column])
+    vote = Vote(row[user_code_column].lower())
 
     return vote
 
