@@ -1,23 +1,44 @@
 class STV:
 
     def __init__(self):
-        self.members = set()
+        self.members = {}
         self.votes = {}
         self.number_non_member_votes = 0
         self.roles = []
         self.invalidVotes = {}
 
 
-class Vote:
+class Member:
 
     def __init__(self, usercode):
         self.usercode = usercode
+
+
+class Vote:
+
+    def __init__(self, member):
+        self.member = member
+        self.positions = {}
 
     def __repr__(self):
         return "Vote({!r})".format(self.usercode)
 
     def __str__(self):
         return "Vote made by {}".format(self.usercode)
+
+
+class Position:
+
+    def __init__(self, role):
+        self.role = role
+        self.candidate_votes = []
+
+
+class CandidateVote:
+
+    def __init__(self, name):
+        self.name = name
+        self.value = None
 
 
 class Role:

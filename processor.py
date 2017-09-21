@@ -1,15 +1,4 @@
 
-def validate_votes(stv):
-    validate_membership(stv)
-
-
-def validate_membership(stv):
-    for usercode in stv.votes.copy():
-        if usercode not in stv.members:
-            stv.invalidVotes[usercode] = stv.votes[usercode]
-            del stv.votes[usercode]
-            stv.number_non_member_votes += 1
-
 
 def report_number_invalid_votes(stv):
     total_votes = len(stv.votes) + stv.number_non_member_votes

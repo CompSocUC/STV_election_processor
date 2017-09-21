@@ -24,6 +24,12 @@
         "number_of_positions": 1
     },
     {
+        "name": "Academic Events Manager",
+        "column_name": "Academic Events Manager candidates",
+        "held_in_conjuction": false,
+        "number_of_positions": 2
+    },
+    {
         "name": "Marketing Manager",
         "column_name": "Marketing Manager candidates",
         "held_in_conjuction": false,
@@ -32,12 +38,6 @@
     {
         "name": "Social Events Manager",
         "column_name": "Social Events Manager candidates",
-        "held_in_conjuction": false,
-        "number_of_positions": 2
-    },
-    {
-        "name": "Academic Events Manager",
-        "column_name": "Academic Events Manager candidates",
         "held_in_conjuction": false,
         "number_of_positions": 2
     },

@@ -1,5 +1,5 @@
 from pathlib import Path
-from classes import Vote, Role
+from classes import Vote, Role, Member, Position, CandidateVote
 import csv
 import re
 import json
@@ -10,8 +10,11 @@ USECODE_REGEX = "[a-zA-Z]{3,4}[0-9]{2,3}"
 
 VOTES_FILE_PATH_DEFAULT = "votes.csv"
 VOTES_UCCODE_COLUMN_NAME_DEFAULT = "What is your UC usercode (abc123)"
+POSITION_REGEX = "[a-zA-Z\s]+\[[a-zA-Z\s]+\]"
 
 ROLES_FILE_PATH_DEFAULT = "roles.json"
+
+VOTE_VALUE_REGEX = "([0-9],\s)*[0-9]"
 
 
 def check_match_for_usercode_format(value):
@@ -54,7 +57,80 @@ def check_match_for_usercode_format(value):
     False
     """
 
-    if type(value) is str and re.match(USECODE_REGEX, value) is not None:
+    if type(value) is str and re.fullmatch(USECODE_REGEX, value) is not None:
+        return True
+
+    return False
+
+
+def check_if_position_vote(value):
+    """Check to see if the position supplied matches the expected format.
+
+    Args:
+        value (str): The position to validate.
+
+    Returns:
+        bool: True if the position is valid, False otherwise.
+
+
+    >>> check_if_position_vote("Pres [person]")
+    True
+    >>> check_if_position_vote("Pres")
+    False
+    >>> check_if_position_vote("Pres[person]")
+    True
+    >>> check_if_position_vote("[person]")
+    False
+    >>> check_if_position_vote("Bad")
+    False
+    >>> check_if_position_vote(12)
+    False
+    >>> check_if_position_vote("[fail] bad")
+    False
+    >>> check_if_position_vote(None)
+    False
+    """
+
+    if type(value) is str and re.fullmatch(POSITION_REGEX, value) is not None:
+        return True
+
+    return False
+
+
+def check_vote_value(value):
+    """Check to see if the vote sequence supplied matches the expected format.
+
+    Args:
+        value (str, int): The vote to validate.
+
+    Returns:
+        bool: True if the vote sequence is valid, False otherwise.
+
+
+    >>> check_vote_value("")
+    True
+    >>> check_vote_value("1")
+    True
+    >>> check_vote_value("1, 2")
+    True
+    >>> check_vote_value("3, 5")
+    True
+    >>> check_vote_value(1)
+    True
+    >>> check_vote_value(12)
+    True
+    >>> check_vote_value("bad")
+    False
+    >>> check_vote_value(None)
+    True
+    """
+
+    if type(value) is int or value is None or \
+       (type(value) is str and value == ''):
+        return True
+
+    if type(value) is str and \
+       re.fullmatch(VOTE_VALUE_REGEX, value) is not None:
         return True
 
     return False
@@ -88,17 +164,18 @@ def read_members(stv):
         reader = csv.DictReader(members_csv, delimiter=',', quotechar='"')
         row = next(reader)
 
-        if not row[user_code_column]:
+        if not check_match_for_usercode_format(row[user_code_column]):
             raise Exception("Error, it appears the column selected is not "
                             "the usercode, usercodes should match the regex {}"
                             .format(USECODE_REGEX))
         else:
-            stv.members.add(row[user_code_column].lower())
+            user_code = row[user_code_column].lower()
+            stv.members[user_code] = Member(user_code)
 
         for row in reader:
             user = row[user_code_column].lower()
             if check_match_for_usercode_format(user):
-                stv.members.add(user)
+                stv.members[user] = Member(user)
 
 
 def read_votes(stv):
@@ -131,12 +208,20 @@ def read_votes(stv):
                             "the usercode, usercodes should match the regex {}"
                             .format(USECODE_REGEX))
         else:
-            stv.votes[row[user_code_column].lower()] = \
-                create_vote(row, user_code_column)
+            user_code = row[user_code_column].lower()
+            if user_code in stv.members:
+                member = stv.members[user_code]
+                stv.votes[member] = create_vote(stv, row, member)
+            else:
+                stv.number_non_member_votes += 1
 
         for row in reader:
-            stv.votes[row[user_code_column].lower()] = \
-                create_vote(row, user_code_column)
+            user_code = row[user_code_column].lower()
+            if user_code in stv.members:
+                member = stv.members[user_code]
+                stv.votes[member] = create_vote(stv, row, member)
+            else:
+                stv.number_non_member_votes += 1
 
 
 def read_roles(stv):
@@ -160,16 +245,60 @@ def class_mapper(d):
     return Role(**d)
 
 
-def create_vote(row, user_code_column):
-    vote = Vote(row[user_code_column].lower())
+def create_position(stv, vote, row):
+
+    for key, value in row.items():
+        if check_if_position_vote(key):
+            position_part = key.split('[')
+            position_name = position_part[0].strip()
+
+            if position_name not in vote.positions:
+                role = match_role(stv, position_name)
+                if role is None:
+                    raise Exception("Role not found, although is was of a \
+                                    valid format.")
+                position = Position(role)
+
+            else:
+                position = vote.positions[position_name]
+
+            position_candidate = position_part[1].split(']')[0].strip()
+            candidate_vote = CandidateVote(position_candidate)
+            candidate_vote.value = get_valid_vote_value(value)
+
+            position.candidate_votes.append(candidate_vote)
+
+
+def create_vote(stv, row, member):
+    vote = Vote(member)
+    create_position(stv, vote, row)
 
     return vote
 
 
+def get_valid_vote_value(value):
+    if not check_vote_value(value):
+        raise Exception("Vote did not match validator")
+
+    if value is None or value == '':
+        return None
+    possible_values = value.split(',')
+    possible_values = map(str.strip, possible_values)
+
+    return min(possible_values)
+
+
+def match_role(stv, role_name):
+    for role in stv.roles:
+        if role.column_name == role_name:
+            return role
+    return None
+
+
 def get_input(stv):
     read_members(stv)
-    read_votes(stv)
     read_roles(stv)
+    read_votes(stv)
 
 
 if __name__ == "__main__":
