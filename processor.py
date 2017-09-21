@@ -18,6 +18,11 @@ def report_roles(stv):
         print(str(role) + "\n")
 
 
+def report_votes(stv):
+    for member, item in stv.votes.items():
+        print(repr(item))
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

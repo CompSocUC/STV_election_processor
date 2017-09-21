@@ -13,6 +13,12 @@ class Member:
     def __init__(self, usercode):
         self.usercode = usercode
 
+    def __repr__(self):
+        return "Member({!r})".format(self.usercode)
+
+    def __str__(self):
+        return "Member name: {}".format(self.usercode)
+
 
 class Vote:
 
@@ -21,10 +27,11 @@ class Vote:
         self.positions = {}
 
     def __repr__(self):
-        return "Vote({!r})".format(self.usercode)
+        return "Vote({!r}), positions[{!r}]".format(self.member,
+                                                    self.positions)
 
     def __str__(self):
-        return "Vote made by {}".format(self.usercode)
+        return "Vote made by {}".format(self.member)
 
 
 class Position:
@@ -33,12 +40,27 @@ class Position:
         self.role = role
         self.candidate_votes = []
 
+    def __repr__(self):
+        return "Position({!r}), candidate_votes[{!r}]"\
+            .format(self.role, self.candidate_votes)
+
+    def __str__(self):
+        return "Position name: {} with candidate_votes: {}"\
+            .format(self.role.name, self.candidate_votes)
+
 
 class CandidateVote:
 
     def __init__(self, name):
         self.name = name
         self.value = None
+
+    def __repr__(self):
+        return "CandidateVote({!r}), value {!r}".format(self.name, self.value)
+
+    def __str__(self):
+        return "Candidate Vote for {}, with a value {}".format(self.name,
+                                                               self.value)
 
 
 class Role:

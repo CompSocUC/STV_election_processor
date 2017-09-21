@@ -258,6 +258,7 @@ def create_position(stv, vote, row):
                     raise Exception("Role not found, although is was of a \
                                     valid format.")
                 position = Position(role)
+                vote.positions[position_name] = position
 
             else:
                 position = vote.positions[position_name]
