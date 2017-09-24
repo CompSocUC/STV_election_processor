@@ -23,6 +23,42 @@ def report_votes(stv):
         print(repr(item))
 
 
+def report_results(stv):
+    for role in stv.roles:
+        role_victors(role, stv)
+
+
+def role_victors(role, stv):
+    """Gather all the results for a particular role"""
+    votes_for_role = []
+    for vote in stv.votes.values():
+        position = vote.positions[role.column_name]
+        if len(position.candidate_votes) > 0:
+            votes_for_role.append(position)
+    run_challenge(votes_for_role, role)
+
+
+def run_challenge(position_votes, role):
+    """Array of positions"""
+    rankings = {}
+    for position_vote in position_votes:
+        position_vote.candidate_votes.sort(key=lambda candidate_vote: candidate_vote.value)
+        # take the first value of the sorted list
+        candidate = position_vote.candidate_votes[0].name
+        if candidate not in rankings:
+            rankings[candidate] = 0
+
+        rankings[candidate] += 1
+
+    total_votes = len(position_votes)
+    ranks = sorted(rankings.items(), key=lambda x: x[1], reverse=True)
+    print("Role: {}, Victor: {}, with {:.2f}%".format(role.name, ranks[0][0], (ranks[0][1] / total_votes) * 100))
+
+
+def validate_votes(stv):
+    pass
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

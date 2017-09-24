@@ -265,9 +265,12 @@ def create_position(stv, vote, row):
 
             position_candidate = position_part[1].split(']')[0].strip()
             candidate_vote = CandidateVote(position_candidate)
-            candidate_vote.value = get_valid_vote_value(value)
 
-            position.candidate_votes.append(candidate_vote)
+            rank = get_valid_vote_value(value)
+
+            if rank is not None:
+                candidate_vote.value = rank
+                position.candidate_votes.append(candidate_vote)
 
 
 def create_vote(stv, row, member):
