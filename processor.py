@@ -35,24 +35,93 @@ def role_victors(role, stv):
         position = vote.positions[role.column_name]
         if len(position.candidate_votes) > 0:
             votes_for_role.append(position)
-    run_challenge(votes_for_role, role)
+
+    run_challenge(votes_for_role, role, stv, [])
 
 
-def run_challenge(position_votes, role):
-    """Array of positions"""
+def run_challenge(position_votes, role, stv, eliminated=[]):
+    """For a given role find the victors"""
     rankings = {}
+    num_votes = 0
     for position_vote in position_votes:
         position_vote.candidate_votes.sort(key=lambda candidate_vote: candidate_vote.value)
         # take the first value of the sorted list
-        candidate = position_vote.candidate_votes[0].name
-        if candidate not in rankings:
-            rankings[candidate] = 0
+        # This should be the candidates lowest vote, as in their first preference.
 
-        rankings[candidate] += 1
+        # if a role cannot be held in conjunction, then we need to make sure that a candidate does not already hold a position on the committee.
+        index = 0
+        if not role.held_in_conjuction:
+            while index < len(position_vote.candidate_votes):
+                candidate = position_vote.candidate_votes[index].name
+                if candidate not in stv.victors and candidate not in eliminated:
+                    break
+                index += 1
 
-    total_votes = len(position_votes)
+        # check to see if a vote is only for one candidate and that candidate already has a position in the committee
+        # So the effective vote does not count
+        if index < len(position_vote.candidate_votes):
+            candidate = position_vote.candidate_votes[index].name
+            num_votes += 1
+        # Get the name of the candidate, check to see if we have seen the candidate before
+        # If not then add them to dict of rankings
+
+            if candidate not in rankings:
+                rankings[candidate] = 1
+
+            rankings[candidate] += 1
+
+    total_votes = num_votes
+
+
     ranks = sorted(rankings.items(), key=lambda x: x[1], reverse=True)
-    print("Role: {}, Victor: {}, with {:.2f}%".format(role.name, ranks[0][0], (ranks[0][1] / total_votes) * 100))
+
+    min_percentage = (role.number_of_positions / (role.number_of_positions + 1)) / role.number_of_positions
+
+    victors_message = ""
+    vote_majority = True
+    victors = []
+    for _ in range(0, role.number_of_positions):
+        if (ranks[_][1] / total_votes) >= min_percentage:
+            victors_message += "Role: {}, Victor: {}, with {:.2f}%\n".format(role.name, ranks[_][0], (ranks[_][1] / total_votes) * 100)
+            victors.append(ranks[_][0])
+        else:
+            vote_majority = False
+            break
+
+    if not vote_majority:
+        # clear message
+        victors_message = ""
+        # elimindate lowest person
+        # check the length of the candidates left, could have situation where there is only one candidate and no confidence.
+        # assume that the no confidence candidate always exists.
+        if (len(ranks) - 1) <= role.number_of_positions:
+            # find the no confidence
+            min_vote_threshold = 0
+            for name, votes in ranks:
+                if name == "No Confidence":
+                    min_vote_threshold = votes
+                    break
+            # check to make sure that other candidates have at least more votes than no confidence
+            for name, votes in ranks:
+                if votes >= min_vote_threshold and name != "No Confidence":
+                    victors_message += "Role: {}, Victor: {}, with {:.2f}%\n".format(role.name, name, (votes / total_votes) * 100)
+                    victors.append(name)
+                else:
+                    if name != "No Confidence":
+                        print("Well shit, what happens now")
+        else:
+            # find the lowest person that is not no confidence and add them to elimindated list
+            # rerun challenge
+            index = -1
+            while index > (len(ranks) * -1):
+                if ranks[index][0] != "No Confidence":
+                    eliminated.append(ranks[index][0])
+                    break
+                index -= 1
+
+            run_challenge(position_votes, role, stv, eliminated)
+    stv.victors += victors
+    print(victors_message)
 
 
 def validate_votes(stv):

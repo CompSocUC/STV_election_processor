@@ -6,6 +6,7 @@ class STV:
         self.number_non_member_votes = 0
         self.roles = []
         self.invalidVotes = {}
+        self.victors = []
 
 
 class Member:
